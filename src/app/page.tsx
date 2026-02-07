@@ -1,64 +1,177 @@
+"use client";
+
 import Image from "next/image";
+import { useMemo, useState } from "react";
+
+type Card = {
+  id: string;
+  pairId: string;
+  image: string;
+  isFlipped: boolean;
+  isMatched: boolean;
+};
+
+const PIGEON_IMAGES = [
+  "/pigeons/pigeon-1.svg",
+  "/pigeons/pigeon-2.svg",
+  "/pigeons/pigeon-3.svg",
+  "/pigeons/pigeon-4.svg",
+  "/pigeons/pigeon-5.svg",
+  "/pigeons/pigeon-6.svg",
+  "/pigeons/pigeon-7.svg",
+  "/pigeons/pigeon-8.svg",
+] as const;
+
+const FLIP_BACK_DELAY = 900;
+
+const shuffleCards = (images: readonly string[]): Card[] =>
+  images
+    .flatMap((image, index) => {
+      const pairId = `pair-${index}`;
+      return [0, 1].map((copyIndex) => ({
+        id: `${pairId}-${copyIndex}-${crypto.randomUUID()}`,
+        pairId,
+        image,
+        isFlipped: false,
+        isMatched: false,
+      }));
+    })
+    .sort(() => Math.random() - 0.5);
 
 export default function Home() {
+  const totalPairs = PIGEON_IMAGES.length;
+
+  const [cards, setCards] = useState<Card[]>(() => shuffleCards(PIGEON_IMAGES));
+  const [firstSelectedId, setFirstSelectedId] = useState<string | null>(null);
+  const [turns, setTurns] = useState(0);
+  const [isResolving, setIsResolving] = useState(false);
+
+  const matchedPairs = useMemo(
+    () => new Set(cards.filter((card) => card.isMatched).map((card) => card.pairId)).size,
+    [cards],
+  );
+  const isCleared = matchedPairs === totalPairs;
+
+  const handleCardClick = (id: string) => {
+    if (isResolving) {
+      return;
+    }
+
+    const target = cards.find((card) => card.id === id);
+    if (!target || target.isFlipped || target.isMatched) {
+      return;
+    }
+
+    setCards((previous) =>
+      previous.map((card) => (card.id === id ? { ...card, isFlipped: true } : card)),
+    );
+
+    if (!firstSelectedId) {
+      setFirstSelectedId(id);
+      return;
+    }
+
+    const first = cards.find((card) => card.id === firstSelectedId);
+    if (!first) {
+      setFirstSelectedId(id);
+      return;
+    }
+
+    setTurns((previous) => previous + 1);
+
+    if (first.pairId === target.pairId) {
+      setCards((previous) =>
+        previous.map((card) =>
+          card.id === firstSelectedId || card.id === id
+            ? { ...card, isMatched: true }
+            : card,
+        ),
+      );
+      setFirstSelectedId(null);
+      return;
+    }
+
+    setIsResolving(true);
+    window.setTimeout(() => {
+      setCards((previous) =>
+        previous.map((card) =>
+          card.id === firstSelectedId || card.id === id
+            ? { ...card, isFlipped: false }
+            : card,
+        ),
+      );
+      setFirstSelectedId(null);
+      setIsResolving(false);
+    }, FLIP_BACK_DELAY);
+  };
+
+  const restart = () => {
+    setCards(shuffleCards(PIGEON_IMAGES));
+    setFirstSelectedId(null);
+    setTurns(0);
+    setIsResolving(false);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-slate-100 px-4 py-10 text-slate-900">
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        <header className="rounded-2xl bg-white p-6 shadow-sm">
+          <h1 className="text-2xl font-bold">鳩神経衰弱</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            2枚ずつめくって同じ鳩を揃えましょう。判定中は入力がロックされます。
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+            <span className="rounded-full bg-slate-100 px-3 py-1 font-medium">
+              ターン数: {turns}
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 font-medium">
+              成功ペア: {matchedPairs} / {totalPairs}
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 font-medium">
+              {isCleared ? "クリア！🎉" : "プレイ中"}
+            </span>
+            <button
+              type="button"
+              onClick={restart}
+              className="rounded-full bg-slate-900 px-4 py-2 text-white transition hover:bg-slate-700"
+            >
+              リスタート
+            </button>
+          </div>
+        </header>
+
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          {cards.map((card) => {
+            const isFaceUp = card.isFlipped || card.isMatched;
+            return (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => handleCardClick(card.id)}
+                disabled={isResolving || card.isMatched}
+                className={`group relative aspect-[3/4] overflow-hidden rounded-xl border-2 transition ${
+                  isFaceUp
+                    ? "border-emerald-500 bg-white shadow"
+                    : "border-slate-300 bg-slate-200 hover:border-slate-400"
+                } ${card.isMatched ? "ring-2 ring-emerald-300" : ""}`}
+              >
+                {isFaceUp ? (
+                  <Image
+                    src={card.image}
+                    alt="鳩カード"
+                    fill
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 16vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-slate-300 text-4xl">
+                    🕊️
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </section>
       </main>
     </div>
   );
