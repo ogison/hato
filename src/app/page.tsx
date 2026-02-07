@@ -1,32 +1,62 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
+
+type PigeonCardDefinition = {
+  id: number;
+  name: string;
+  imagePath: string;
+};
 
 type Card = {
   id: number;
   pairId: number;
-  image: string;
+  imagePath: string;
+  name: string;
   isFlipped: boolean;
   isMatched: boolean;
 };
 
-const PIGEON_IMAGES = [
-  "🕊️",
-  "🐦",
-  "🪽",
-  "🪶",
-  "🐤",
-  "🐥",
-  "🐣",
-  "🦜",
-  "🦢",
-  "🦩",
+const PIGEON_FALLBACK_IMAGE = "/pigeons/pigeon-fallback.svg";
+
+const PIGEON_CARDS: PigeonCardDefinition[] = [
+  { id: 0, name: "カワラバト", imagePath: "/pigeons/rock-dove.svg" },
+  {
+    id: 1,
+    name: "シロレースホーミングピジョン",
+    imagePath: "/pigeons/white-homing-pigeon.svg",
+  },
+  { id: 2, name: "カンムリバト", imagePath: "/pigeons/crowned-pigeon.svg" },
+  { id: 3, name: "ニコバルバト", imagePath: "/pigeons/nicobar-pigeon.svg" },
+  {
+    id: 4,
+    name: "オウギバト",
+    imagePath: "/pigeons/victoria-crowned-pigeon.svg",
+  },
+  { id: 5, name: "ファンテイル", imagePath: "/pigeons/fantail-pigeon.svg" },
+  { id: 6, name: "ジャコビン", imagePath: "/pigeons/jacobin-pigeon.svg" },
+  { id: 7, name: "ラホール", imagePath: "/pigeons/lahore-pigeon.svg" },
+  { id: 8, name: "キングピジョン", imagePath: "/pigeons/king-pigeon.svg" },
+  {
+    id: 9,
+    name: "リョコウバト",
+    imagePath: "/pigeons/passenger-pigeon.svg",
+  },
 ];
 
 const shuffleCards = (): Card[] => {
-  const duplicated = PIGEON_IMAGES.flatMap((image, pairId) => [
-    { pairId, image },
-    { pairId, image },
+  const duplicated = PIGEON_CARDS.flatMap((pigeon) => [
+    {
+      pairId: pigeon.id,
+      imagePath: pigeon.imagePath,
+      name: pigeon.name,
+    },
+    {
+      pairId: pigeon.id,
+      imagePath: pigeon.imagePath,
+      name: pigeon.name,
+    },
   ]);
 
   return duplicated
@@ -45,6 +75,7 @@ export default function Home() {
   const [openedCards, setOpenedCards] = useState<number[]>([]);
   const [turns, setTurns] = useState(0);
   const [isCleared, setIsCleared] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
 
   const matchedCount = useMemo(
     () => cards.filter((card) => card.isMatched).length / 2,
@@ -115,6 +146,7 @@ export default function Home() {
     setOpenedCards([]);
     setTurns(0);
     setIsCleared(false);
+    setBrokenImages({});
   };
 
   return (
@@ -124,7 +156,7 @@ export default function Home() {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-4 shadow">
           <p className="text-lg font-medium">手数: {turns}</p>
           <p className="text-lg font-medium">
-            揃ったペア: {matchedCount} / {PIGEON_IMAGES.length}
+            揃ったペア: {matchedCount} / {PIGEON_CARDS.length}
           </p>
           <button
             type="button"
@@ -144,6 +176,9 @@ export default function Home() {
         <section className="grid grid-cols-4 gap-4 sm:grid-cols-5">
           {cards.map((card) => {
             const isOpen = card.isFlipped || card.isMatched;
+            const imagePath = brokenImages[card.id]
+              ? PIGEON_FALLBACK_IMAGE
+              : card.imagePath;
 
             return (
               <button
@@ -151,14 +186,26 @@ export default function Home() {
                 type="button"
                 onClick={() => handleCardClick(card.id)}
                 disabled={card.isMatched}
-                className="aspect-square rounded-xl border border-slate-300 text-4xl shadow-sm transition hover:scale-[1.02] disabled:cursor-not-allowed"
+                className="aspect-square overflow-hidden rounded-xl border border-slate-300 shadow-sm transition hover:scale-[1.02] disabled:cursor-not-allowed"
               >
                 {isOpen ? (
-                  <span className="flex h-full items-center justify-center rounded-xl bg-white">
-                    {card.image}
+                  <span className="relative flex h-full items-center justify-center rounded-xl bg-white">
+                    <Image
+                      src={imagePath}
+                      alt={card.name}
+                      fill
+                      sizes="(max-width: 640px) 25vw, 20vw"
+                      className="object-cover"
+                      onError={() =>
+                        setBrokenImages((prev) => ({ ...prev, [card.id]: true }))
+                      }
+                    />
+                    <span className="pointer-events-none absolute inset-x-1 bottom-1 rounded-md bg-slate-900/65 px-1 py-0.5 text-center text-[10px] font-semibold text-white sm:text-xs">
+                      {card.name}
+                    </span>
                   </span>
                 ) : (
-                  <span className="flex h-full items-center justify-center rounded-xl bg-slate-800 text-xl text-white">
+                  <span className="flex h-full items-center justify-center rounded-xl bg-slate-800 text-xl font-semibold text-white">
                     鳩
                   </span>
                 )}

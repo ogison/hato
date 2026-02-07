@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title>nicobar-pigeon</title>
+  <desc>Stylized pigeon illustration for nicobar-pigeon.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(124 70% 95%)"/>
+      <stop offset="100%" stop-color="hsl(169 70% 85%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="36" fill="url(#bg)"/>
+  <ellipse cx="144" cy="178" rx="80" ry="64" fill="hsl(124 35% 45%)"/>
+  <circle cx="198" cy="124" r="44" fill="hsl(124 30% 55%)"/>
+  <polygon points="236,130 282,144 238,156" fill="#f59e0b"/>
+  <circle cx="210" cy="112" r="7" fill="#111827"/>
+  <path d="M72 182c30 2 46 15 62 34-32 2-62-10-62-34z" fill="hsl(244 30% 38%)"/>
+  <path d="M124 240c12 8 25 14 37 18" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
+  <path d="M154 240c12 8 25 14 37 18" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
+</svg>

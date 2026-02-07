@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title>Pigeon fallback</title>
+  <desc>Fallback pigeon illustration used when a species image is unavailable.</desc>
+  <rect width="320" height="320" rx="36" fill="#e2e8f0"/>
+  <ellipse cx="144" cy="178" rx="80" ry="64" fill="#64748b"/>
+  <circle cx="198" cy="124" r="44" fill="#94a3b8"/>
+  <polygon points="236,130 282,144 238,156" fill="#f59e0b"/>
+  <circle cx="210" cy="112" r="7" fill="#0f172a"/>
+  <path d="M72 182c30 2 46 15 62 34-32 2-62-10-62-34z" fill="#475569"/>
+  <path d="M124 240c12 8 25 14 37 18" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+  <path d="M154 240c12 8 25 14 37 18" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+  <text x="160" y="294" text-anchor="middle" font-size="20" fill="#0f172a" font-family="Arial, sans-serif">PIGEON</text>
+</svg>
